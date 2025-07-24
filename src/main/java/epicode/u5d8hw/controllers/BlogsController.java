@@ -1,11 +1,14 @@
 package epicode.u5d8hw.controllers;
 
 import epicode.u5d8hw.entities.Blogpost;
-import epicode.u5d8hw.exceptions.NotFoundException;
-import epicode.u5d8hw.payloads.NewBlogPostPayload;
+import epicode.u5d8hw.exceptions.BadRequestException;
+import epicode.u5d8hw.payloads.NewBlogPayloaDTO;
 import epicode.u5d8hw.services.BlogsService;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,14 +22,17 @@ public class BlogsController {
     // 1. - POST http://localhost:3001/blogs (+ req.body)
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED) // <-- 201
-    public Blogpost saveBlog(@RequestBody NewBlogPostPayload body) {
-        return blogsService.save(body);
+    public Blogpost saveBlog(@RequestBody @Validated NewBlogPayloaDTO newBlog, @NotNull BindingResult validation) {
+        if (validation.hasErrors()) {
+            throw new BadRequestException(validation.getAllErrors());
+        }
+        return this.blogsService.save(newBlog.getId(), newBlog);
     }
 
     // 2. - GET http://localhost:3001/blogs
     @GetMapping("")
     public List<Blogpost> getBlogs(@RequestParam(required = false) Integer authorId) {
-        if(authorId != null) return blogsService.findByAuthor(authorId);
+        if (authorId != null) return blogsService.findByAuthor(authorId);
         else return blogsService.getBlogs();
     }
 
@@ -38,7 +44,7 @@ public class BlogsController {
 
     // 4. - PUT http://localhost:3001/blogs/{id} (+ req.body)
     @PutMapping("/{blogId}")
-    public Blogpost findAndUpdate(@PathVariable int blogId, @RequestBody NewBlogPostPayload body) {
+    public Blogpost findAndUpdate(@PathVariable int blogId, @RequestBody NewBlogPayloaDTO body) {
         return blogsService.findByIdAndUpdate(blogId, body);
     }
 

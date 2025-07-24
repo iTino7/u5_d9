@@ -3,13 +3,12 @@ package epicode.u5d8hw.services;
 import epicode.u5d8hw.entities.Author;
 import epicode.u5d8hw.entities.Blogpost;
 import epicode.u5d8hw.exceptions.NotFoundException;
-import epicode.u5d8hw.payloads.NewBlogPostPayload;
-import epicode.u5d8hw.repositories.AuthorsRepository;
+import epicode.u5d8hw.payloads.NewBlogPayloaDTO;
 import epicode.u5d8hw.repositories.BlogsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 public class BlogsService {
@@ -18,8 +17,8 @@ public class BlogsService {
     @Autowired
     private AuthorsService authorsService;
 
-    public Blogpost save(NewBlogPostPayload body) {
-        Author author = authorsService.findById(body.getAuthorId());
+    public Blogpost save(int id, NewBlogPayloaDTO body) {
+        Author author = authorsService.findById(id);
         Blogpost newBlogPost = new Blogpost();
         newBlogPost.setReadingTime(body.getReadingTime());
         newBlogPost.setContent(body.getContent());
@@ -43,7 +42,7 @@ public class BlogsService {
         blogsRepository.delete(found);
     }
 
-    public Blogpost findByIdAndUpdate(int id, NewBlogPostPayload body) {
+    public Blogpost findByIdAndUpdate(int id, NewBlogPayloaDTO body) {
         Blogpost found = this.findById(id);
 
         found.setReadingTime(body.getReadingTime());
@@ -51,15 +50,15 @@ public class BlogsService {
         found.setTitle(body.getTitle());
         found.setCategory(body.getCategory());
 
-        if(found.getAuthor().getId()!= body.getAuthorId()) {
-            Author newAuthor = authorsService.findById(body.getAuthorId());
+        if (found.getAuthor().getId() != body.getId()) {
+            Author newAuthor = authorsService.findById(body.getId());
             found.setAuthor(newAuthor);
         }
 
         return blogsRepository.save(found);
     }
 
-    public List<Blogpost> findByAuthor(int authorId){
+    public List<Blogpost> findByAuthor(int authorId) {
         Author author = authorsService.findById(authorId);
         return blogsRepository.findByAuthor(author);
     }
